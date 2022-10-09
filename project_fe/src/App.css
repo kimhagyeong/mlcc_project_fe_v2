@@ -116,7 +116,7 @@ input#number {
   margin: 0px;
   width: 55px;
   height: 40px;
-  margin-top: -1px;
+  /* margin-top: -1px; */
   margin-right: 3px;
 }
 

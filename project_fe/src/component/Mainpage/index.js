@@ -1,43 +1,33 @@
-import React, { useState, useRef, useEffect } from "react";
-import CssBaseline from '@mui/material/CssBaseline';
-import Container from '@mui/material/Container';
+import React, { useRef, useEffect } from "react";
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
 import styled from "styled-components";
 import Grid from '@mui/material/Grid';
-import {useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 // import {makeStyles} from 'makeStyles'
 import MobileStepper from '@mui/material/MobileStepper';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import SwipeableViews from 'react-swipeable-views-react-18-fix';
 import { autoPlay } from 'react-swipeable-views-utils';
-import AlbumIcon from '@mui/icons-material/Album';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Img from '../../resource/new_align_0001.jpg'
 import Img2 from '../../resource/new_align_0003.jpg'
 import Img3 from '../../resource/new_align_0005.jpg'
 import Img4 from '../../resource/new_align_0006.jpg'
-import moment from 'moment'
 import api from '../../api'
 import SendIcon from '@mui/icons-material/Send';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CircularProgress from '@mui/material/CircularProgress';
 import { green } from '@mui/material/colors';
-import Fab from '@mui/material/Fab';
-import CheckIcon from '@mui/icons-material/Check';
-import SaveIcon from '@mui/icons-material/Save';
 
 
 const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
-const defaultDate = new Date().toISOString().substring(0,10);
+const defaultDate = new Date().toISOString().substring(0, 10);
 
 const ContainerGrid = styled(Grid)`
     height:100%;
@@ -190,17 +180,6 @@ const CustomGrid = styled(Grid)`
         padding-top:15px;
     }
 `
-const SearchGrid = styled(Grid)`
-    height:8rem;
-    justify-content:space-evenly;
-    align-tems:flex-end;
-    padding-right:0 !important;
-    button {
-        width:7rem;
-        height:3rem;
-        font-size:1rem;
-    }
-`
 
 const sampleImgList = {
     "Normal": [
@@ -208,6 +187,7 @@ const sampleImgList = {
             "name": "1",
             "original_image": Img,
             "segmentation_image": Img2,
+            "source_pc": "pc5",
             "margin_ratio": 90.2345,
             "created_date": "2022-06-12"
         },
@@ -215,6 +195,7 @@ const sampleImgList = {
             "name": "2",
             "original_image": Img3,
             "segmentation_image": Img4,
+            "source_pc": "pc3",
             "margin_ratio": 90.546,
             "created_date": "2022-06-12"
         }
@@ -224,6 +205,7 @@ const sampleImgList = {
             "name": "3",
             "original_image": Img3,
             "segmentation_image": Img4,
+            "source_pc": "pc5",
             "margin_ratio": 78.546,
             "created_date": "2022-06-12"
         },
@@ -231,33 +213,19 @@ const sampleImgList = {
             "name": "4",
             "original_image": Img,
             "segmentation_image": Img2,
+            "source_pc": "pc4",
             "margin_ratio": 86.2345,
             "created_date": "2022-06-12"
         }
     ]
 }
 
-// const useStyles = makeStyles((theme) => ({
-//     root: {
-//         maxWidth: 400,
-//         flexGrow: 1,
-//     },
-//     header: {
-//         display: 'flex',
-//         alignItems: 'center',
-//         height: 50,
-//         paddingLeft: theme.spacing(4),
-//         backgroundColor: theme.palette.background.default,
-//     }
-// }));
-
-
 export default (props) => {
-    
-    const [period, setperiod] = React.useState('Today');
     const [npc, setNpc] = React.useState('All');
     const [normalList, setNormalList] = React.useState([]);
     const [errorList, setErrorList] = React.useState([]);
+    const [originNormalList, setOriginNormalList] = React.useState([]);
+    const [originErrorList, setOriginErrorList] = React.useState([]);
 
     // const classes = useStyles();
     const theme = useTheme();
@@ -269,11 +237,9 @@ export default (props) => {
     const [fromRatio, setFromRatio] = React.useState(83);
     const [toRatio, setToRatio] = React.useState(87);
     const [threshold, setThreshold] = React.useState(85);
-    
-  const [loading, setLoading] = React.useState(true);
-  const [success, setSuccess] = React.useState(false);
 
-
+    const [loading, setLoading] = React.useState(true);
+    const [success, setSuccess] = React.useState(false);
     function useInterval(callback, delay) {
         const savedCallback = useRef();
 
@@ -306,9 +272,8 @@ export default (props) => {
         };
     }, []);
     const searchApi = async () => {
-        var now = new Date();
-        var start_date = moment(now).format('YYYY.MM.DD')
-        var end_date = start_date
+        var start_date
+        var end_date
         if (document.getElementById('start-date') != null) {
             start_date = document.getElementById('start-date').value.replaceAll('-', '.')
         }
@@ -318,12 +283,15 @@ export default (props) => {
         }
         try {
             var response = await api.getMainListWithSetting(start_date + '~' + end_date, threshold);
-            setNormalList(response.data['Normal'])
-            setErrorList(response.data['Error'])
+            setOriginNormalList(response.data['Normal'])
+            setOriginErrorList(response.data['Error'])
+            reorganizedList()
             setMaxNormalSteps(response.data['Normal'].length)
             setMaxErrorSteps(response.data['Error'].length)
         } catch (e) {
             console.log(e)
+            setOriginNormalList(sampleImgList['Normal'])
+            setOriginErrorList(sampleImgList['Error'])
             setNormalList(sampleImgList['Normal'])
             setErrorList(sampleImgList['Error'])
             setMaxNormalSteps(sampleImgList['Normal'].length)
@@ -333,11 +301,15 @@ export default (props) => {
     const componentDidMountApi = async () => {
         try {
             var response = await api.getMainList();
+            setOriginNormalList(response.data['Normal'])
+            setOriginErrorList(response.data['Error'])
             setNormalList(response.data['Normal'])
             setErrorList(response.data['Error'])
             setMaxNormalSteps(response.data['Normal'].length)
             setMaxErrorSteps(response.data['Error'].length)
         } catch (e) {
+            setOriginNormalList(sampleImgList['Normal'])
+            setOriginErrorList(sampleImgList['Error'])
             setNormalList(sampleImgList['Normal'])
             setErrorList(sampleImgList['Error'])
             setMaxNormalSteps(sampleImgList['Normal'].length)
@@ -345,22 +317,51 @@ export default (props) => {
         }
     }
 
-    const periodHandleChange = (event) => {
-        setperiod(event.target.value);
-    };
     const npcHandleChange = (event) => {
-        setNpc(event.target.value);
+        var _npc=event.target.value
+        setNpc(_npc);
+
+        var _search=document.getElementById('searchImg').value
+        var _errorList = []
+        var _normalList = []
+        originNormalList.forEach(function (step) {
+            if (_npc === 'All') {
+                if (step.original_image.search(_search)!==-1) {
+                    _normalList.push(step)
+                    console.log(step)
+                }
+            } else {
+                if ((step.original_image.search(_search)!==-1) &&( step.source_pc.search(_npc)!==-1)) {
+                    _normalList.push(step)
+                }
+            }
+        })
+
+        originErrorList.forEach(function (step) {
+            if (_npc === 'All') {
+                if (step.original_image.search(_search)!==-1) {
+                    _errorList.push(step)
+                }
+            } else {
+                if ((step.original_image.search(_search)!==-1) && (step.source_pc.search(_npc)!==-1)) {
+                    _errorList.push(step)
+                }
+            }
+
+        })
+        setErrorList(_errorList)
+        setNormalList(_normalList)
     };
 
     const setWarningColor = (ratio) => {
         if (ratio < fromRatio) {
-            return '#ff3300'
+            return '#3dc000'
         }
         if (ratio >= fromRatio && ratio <= toRatio) {
-            return '#ff7300'
+            return '#ff3300'
         }
         if (ratio > toRatio) {
-            return '#3dc000'
+            return '#ff7300'
         }
     }
 
@@ -429,252 +430,283 @@ export default (props) => {
         }
     };
 
+    const handleClick = (target, value) => {
+        
+        switch (target) {
+            case "fromRatio":
+                if (value >= 0 && value < toRatio) {
+                    setFromRatio(value);
+                } else {
+                    document.querySelector('input[name="fromRatio"]').value = fromRatio;
+                }
+                break;
+            case "toRatio":
+                if (value <= 100 && value > fromRatio) {
+                    setToRatio(value);
+                } else {
+                    document.querySelector('input[name="toRatio"]').value = toRatio;
+                }
+                break;
+            case "threshold":
+                if (value >= 0 && value <= 100) {
+                    setThreshold(value);
+                } else {
+                    document.querySelector('input[name="threshold"]').value = threshold;
+                }
+                break;
+            default:
+                console.log("error!");
+        }
+    };
     const handleSearch = () => {
-        // searchApi()
+        searchApi()
     }
 
-    const todayDate=()=>{
-        var date = new Date();
-        var year = date.getFullYear();
-        var month = date.getMonth() + 1;
-       var day = date.getDate();
-       console.log(year+"-"+month+"-"+day)
-        return year+"-"+month+"-"+date
-    }
-  const buttonSx = {
-    ...(success && {
-      bgcolor: green[500],
-      '&:hover': {
-        bgcolor: green[700]
-      },
-    }),
-  };
+    const buttonSx = {
+        ...(success && {
+            bgcolor: green[500],
+            '&:hover': {
+                bgcolor: green[700]
+            },
+        }),
+    };
 
-    
+    const reorganizedList = () => {
+        var _search=document.getElementById('searchImg').value
+        var _errorList = []
+        var _normalList = []
+        originNormalList.forEach(function (step) {
+            if (npc === 'All') {
+                if (step.original_image.search(_search)!==-1) {
+                    _normalList.push(step)
+                    console.log(step)
+                }
+            } else {
+                if ((step.original_image.search(_search)!==-1) &&( step.source_pc.search(npc)!==-1)) {
+                    _normalList.push(step)
+                }
+            }
+        })
+
+        originErrorList.forEach(function (step) {
+            if (npc === 'All') {
+                if (step.original_image.search(_search)!==-1) {
+                    _errorList.push(step)
+                }
+            } else {
+                if ((step.original_image.search(_search)!==-1) && (step.source_pc.search(npc)!==-1)) {
+                    _errorList.push(step)
+                }
+            }
+
+        })
+        setErrorList(_errorList)
+        setNormalList(_normalList)
+    }
+
     return (
         <div className='outer-div'>
             <div className='inner-div'>
 
 
-            <ContainerGrid container
-                spacing={0}
-                direction="row"
-                justifyContent="center"
-                alignItems="center" >
+                <ContainerGrid container
+                    spacing={0}
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="center" >
 
-                <MonitoringStepper item xs={6}>
-                    <AutoPlaySwipeableViews
-                        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-                        index={normalStep}
-                        // onChangeIndex={handleStepChange}
-                        enableMouseEvents
-                    >
-                        {normalList.map((step, index) => (
-                            <div key={"normalStepDiv" + index}>
-                                {Math.abs(normalStep - index) <= 2 ? (
-                                    <img src={step.original_image} alt={step.label} key={"normalStepImg" + step.name} onClick={() => window.location.href = '/detail/' + step.name} />
-                                ) : null}
-                            </div>
-                        ))}
-                    </AutoPlaySwipeableViews>
-                    <MobileStepper
-                        steps={maxNormalSteps}
-                        position="static"
-                        variant="text"
-                        activeStep={normalStep}
-                        nextButton={
-                            <Button size="small" onClick={handleNormalNext} disabled={normalStep === maxNormalSteps - 1}>
-                                Next
-                                {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-                            </Button>
-                        }
-                        backButton={
-                            <Button size="small" onClick={handleNormalBack} disabled={normalStep === 0}>
-                                {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-                                Back
-                            </Button>
-                        }
-                    />
-                </MonitoringStepper>
+                    <MonitoringStepper item xs={6}>
+                        <AutoPlaySwipeableViews
+                            axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+                            index={normalStep}
+                            // onChangeIndex={handleStepChange}
+                            enableMouseEvents
+                        >
+                            {normalList.map((step, index) => (
+                                <div key={"normalStepDiv" + index}>
+                                    {Math.abs(normalStep - index) <= 2 ? (
+                                        <img src={step.original_image} alt={step.label} key={"normalStepImg" + step.name} onClick={() => window.location.href = '/detail/' + step.name} />
+                                    ) : null}
+                                </div>
+                            ))}
+                        </AutoPlaySwipeableViews>
+                        <MobileStepper
+                            steps={maxNormalSteps}
+                            position="static"
+                            variant="text"
+                            activeStep={normalStep}
+                            nextButton={
+                                <Button size="small" onClick={handleNormalNext} disabled={normalStep === maxNormalSteps - 1}>
+                                    Next
+                                    {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+                                </Button>
+                            }
+                            backButton={
+                                <Button size="small" onClick={handleNormalBack} disabled={normalStep === 0}>
+                                    {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+                                    Back
+                                </Button>
+                            }
+                        />
+                    </MonitoringStepper>
 
 
-                <MonitoringStepper item xs={6}>
-                    <AutoPlaySwipeableViews
-                        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-                        index={errorStep}
-                        // onChangeIndex={handleStepChange}
-                        enableMouseEvents
-                    >
-                        {errorList.map((step, index) => (
-                            <div key={"errorStepDiv" + step.original_img}>
-                                {Math.abs(errorStep - index) <= 2 ? (
-                                    <img src={step.original_image} alt={step.label} key={"errorStepImg" + step.name}  onClick={() => window.location.href = '/detail/' + step.name} />
-                                ) : null}
-                            </div>
-                        ))}
-                    </AutoPlaySwipeableViews>
-                    <MobileStepper
-                        steps={maxErrorSteps}
-                        position="static"
-                        variant="text"
-                        activeStep={errorStep}
-                        nextButton={
-                            <Button size="small" onClick={handleErrorNext} disabled={errorStep === maxErrorSteps - 1}>
-                                Next
-                                {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-                            </Button>
-                        }
-                        backButton={
-                            <Button size="small" onClick={handleErrorBack} disabled={errorStep === 0}>
-                                {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-                                Back
-                            </Button>
-                        }
-                    />
-                </MonitoringStepper>
+                    <MonitoringStepper item xs={6}>
+                        <AutoPlaySwipeableViews
+                            axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+                            index={errorStep}
+                            // onChangeIndex={handleStepChange}
+                            enableMouseEvents
+                        >
+                            {errorList.map((step, index) => (
+                                <div key={"errorStepDiv" + step.original_img}>
+                                    {Math.abs(errorStep - index) <= 2 ? (
+                                        <img src={step.original_image} alt={step.label} key={"errorStepImg" + step.name} onClick={() => window.location.href = '/detail/' + step.name} />
+                                    ) : null}
+                                </div>
+                            ))}
+                        </AutoPlaySwipeableViews>
+                        <MobileStepper
+                            steps={maxErrorSteps}
+                            position="static"
+                            variant="text"
+                            activeStep={errorStep}
+                            nextButton={
+                                <Button size="small" onClick={handleErrorNext} disabled={errorStep === maxErrorSteps - 1}>
+                                    Next
+                                    {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+                                </Button>
+                            }
+                            backButton={
+                                <Button size="small" onClick={handleErrorBack} disabled={errorStep === 0}>
+                                    {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+                                    Back
+                                </Button>
+                            }
+                        />
+                    </MonitoringStepper>
 
-                <ListContainer item xs={6} style={{ margin: "0 auto 0 auto" }}>
-                    <h2>양품(Normal)</h2>
-                    <div>{normalList.map((Element, index) => (imgList(Element.margin_ratio, Element.original_image, index, normalStep, setNormalStep, 'normal')))}</div>
-                </ListContainer>
+                    <ListContainer item xs={6} style={{ margin: "0 auto 0 auto" }}>
+                        <h2>양품(Normal)</h2>
+                        <div>{normalList.map((Element, index) => (imgList(Element.margin_ratio, Element.original_image, index, normalStep, setNormalStep, 'normal')))}</div>
+                    </ListContainer>
 
-                <ListContainer item xs={6} style={{ margin: "0 auto 0 auto" }}>
-                    <h2>불량(Error)</h2>
-                    <div>{errorList.map((Element, index) => (imgList(Element.margin_ratio, Element.original_image, index, errorStep, setErrorStep, 'error')))}</div>
-                </ListContainer>
-                
+                    <ListContainer item xs={6} style={{ margin: "0 auto 0 auto" }}>
+                        <h2>불량(Error)</h2>
+                        <div>{errorList.map((Element, index) => (imgList(Element.margin_ratio, Element.original_image, index, errorStep, setErrorStep, 'error')))}</div>
+                    </ListContainer>
 
-                <CustomGrid item xs={12}>
-                    <Grid item xs={3}>
-                        <h2>Monitoring period</h2>
-                        <TextField
-                                        className="admin-setting"
-                                        id="start-date"
-                                        label="Start Date"
-                                        type="date"
-                                        defaultValue={defaultDate}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                                    &nbsp;  &nbsp;
-                                    <TextField
-                                        className="admin-setting"
-                                        id="end-date"
-                                        label="End Date"
-                                        type="date"
-                                        defaultValue={defaultDate}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                    </Grid>
 
-                    <Grid item xs={1}>
-                        <h2>PC Number</h2>
-                        <FormControl variant="standard">
-                            <Select
+                    <CustomGrid item xs={12}>
+                        <Grid item xs={3}>
+                            <h2>Monitoring period</h2>
+                            <TextField
                                 className="admin-setting"
-                                labelId="npc"
-                                id="npc"
-                                value={npc}
-                                label="npc"
-                                onChange={npcHandleChange}
-                            >
-                                <MenuItem value={"All"}>All</MenuItem>
-                                <MenuItem value={"1"}>1</MenuItem>
-                                <MenuItem value={"2"}>2</MenuItem>
-                                <MenuItem value={"3"}>3</MenuItem>
-                                <MenuItem value={"4"}>4</MenuItem>
-                                <MenuItem value={"5"}>5</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={3}>
-                        <h2>Image Name</h2>
-                        <TextField id="searchImg" label="Image Name" variant="outlined" />
-                    </Grid>
-
-                    <Grid item xs={4}>
-                        
-                            <h2>Warning ratio</h2>
-                            {/* <TextField
-                                id="standard-number"
-                                type="number"
+                                id="start-date"
+                                label="Start Date"
+                                type="date"
+                                defaultValue={defaultDate}
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
-                                variant="standard"
-                                defaultValue={fromRatio}
-                                onChange={handleChange}/> */}
-                                
-                                {/* <Input
+                            />
+                            &nbsp;  &nbsp;
+                            <TextField
+                                className="admin-setting"
+                                id="end-date"
+                                label="End Date"
+                                type="date"
+                                defaultValue={defaultDate}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                        </Grid>
+
+                        <Grid item xs={1}>
+                            <h2>PC Number</h2>
+                            <FormControl variant="standard">
+                                <Select
                                     className="admin-setting"
-                                    type="number"
-                                    name="fromRatio"
-                                    // InputLabelProps={{
-                                    //     shrink: true,
-                                    // }}
-                                    defaultValue={fromRatio}
-                                    onChange={handleChange}
-                                    endAdornment={<InputAdornment position="end">%</InputAdornment>}
-                                /> */}
+                                    labelId="npc"
+                                    id="npc"
+                                    value={npc}
+                                    label="npc"
+                                    onChange={npcHandleChange}
+                                >
+                                    <MenuItem value={"All"}>All</MenuItem>
+                                    <MenuItem value={"pc1"}>pc1</MenuItem>
+                                    <MenuItem value={"pc2"}>pc2</MenuItem>
+                                    <MenuItem value={"pc3"}>pc3</MenuItem>
+                                    <MenuItem value={"pc4"}>pc4</MenuItem>
+                                    <MenuItem value={"pc5"}>pc5</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <h2>Image Name</h2>
+                            <TextField id="searchImg" label="Enter를 누르면 검색됩니다" variant="outlined" onKeyPress={(event) => { if (event.key === 'Enter') reorganizedList() }} />
+                        </Grid>
+
+                        <Grid item xs={4}>
+
+                            <h2>Warning ratio</h2>
 
                             <form>
-                            <div class="value-button" id="decrease" onclick="decreaseValue()" value="Decrease Value">-</div>
-                            <input type="number" id="number" value="0" />
-                            <span class="percent-tag">%</span>
-                            <div class="value-button" id="increase" onclick="increaseValue()" value="Increase Value">+</div>
-                            <span>&nbsp;&nbsp;&nbsp;~&nbsp;&nbsp;&nbsp;</span>
-                            <div class="value-button" id="decrease" onclick="decreaseValue()" value="Decrease Value">-</div>
-                            <input type="number" id="number" value="0" />
-                            <span class="percent-tag">%</span>
-                            <div class="value-button" id="increase" onclick="increaseValue()" value="Increase Value">+</div>
+                                <div className="value-button" id="decrease" onClick={()=>handleClick("fromRatio",fromRatio-1)}>-</div>
+                                <input type="number" id="number"name="fromRatio" value={fromRatio} onChange={handleChange}/>
+                                <span className="percent-tag">%</span>
+                                <div className="value-button" id="increase" onClick={()=>handleClick("fromRatio",fromRatio+1)}>+</div>
+                                <span>&nbsp;&nbsp;&nbsp;~&nbsp;&nbsp;&nbsp;</span>
+                                <div className="value-button" id="decrease" onClick={()=>handleClick("toRatio",toRatio-1)}>-</div>
+                                <input type="number" id="number" name="toRatio" value={toRatio} onChange={handleChange} />
+                                <span className="percent-tag">%</span>
+                                <div className="value-button" id="increase" onClick={()=>handleClick("toRatio",toRatio+1)}>+</div>
                             </form>
-                            <br/>
+                            <br />
                             <h2>Margin threshold</h2>
                             <form>
-                            <div class="value-button" id="decrease" onclick="decreaseValue()" value="Decrease Value">-</div>
-                            <input type="number" id="number" value="0" />
-                            <span class="percent-tag">%</span>
-                            <div class="value-button" id="increase" onclick="increaseValue()" value="Increase Value">+</div>
+                                <div className="value-button" id="decrease" onClick={()=>handleClick("threshold",threshold-1)}>-</div>
+                                <input type="number" id="number" name="threshold" value={threshold} onChange={handleChange} />
+                                <span className="percent-tag">%</span>
+                                <div className="value-button" id="increase" onClick={()=>handleClick("threshold",threshold+1)}>+</div>
                             </form>
-                        
-                    </Grid>
 
-                    <Grid item xs={1}>
-                    {/* <SettingsIcon sx={{fontSize:40}}  color="action"  onClick={() => window.location.href = '/setting'}></SettingsIcon> */}
-                    <Box sx={{ m: 1, position: 'relative' }}>
-                        <Button
-                        variant="contained"
-                        sx={buttonSx}
-                        endIcon={<SettingsIcon />}
-                        onClick={() => window.location.href = '/setting'}
-                        >
-                        자가학습
-                        </Button>
-                        {loading && (
-                        <CircularProgress
-                            size={24}
-                            sx={{
-                            color: green[500],
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            marginTop: '-12px',
-                            marginLeft: '-12px',
-                            }}
-                        />
-                        )}
-                    </Box>
-                    <Button variant="contained" endIcon={<SendIcon />}>
-                        Search
-                    </Button>
-                    </Grid>
-                </CustomGrid>
+                        </Grid>
 
-                
-            </ContainerGrid>
+                        <Grid item xs={1}>
+                            {/* <SettingsIcon sx={{fontSize:40}}  color="action"  onClick={() => window.location.href = '/setting'}></SettingsIcon> */}
+                            <Box sx={{ m: 1, position: 'relative' }}>
+                                <Button
+                                    variant="contained"
+                                    sx={buttonSx}
+                                    endIcon={<SettingsIcon />}
+                                    onClick={() => window.location.href = '/setting'}
+                                >
+                                    자가학습
+                                </Button>
+                                {loading && (
+                                    <CircularProgress
+                                        size={24}
+                                        sx={{
+                                            color: green[500],
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '50%',
+                                            marginTop: '-12px',
+                                            marginLeft: '-12px',
+                                        }}
+                                    />
+                                )}
+                            </Box>
+                            <Button variant="contained" endIcon={<SendIcon />}>
+                                Search
+                            </Button>
+                        </Grid>
+                    </CustomGrid>
+
+
+                </ContainerGrid>
 
 
             </div>

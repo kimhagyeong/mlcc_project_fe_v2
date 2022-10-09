@@ -134,6 +134,7 @@ export default (props) => {
                                 labelId="demo-simple-select-standard-label"
                                 id="image"
                             >
+                                <MenuItem value={"0"}>Random</MenuItem>
                                 <MenuItem value={"1"}>1</MenuItem>
                                 <MenuItem value={"2"}>2</MenuItem>
                                 <MenuItem value={"3"}>3</MenuItem>
@@ -149,7 +150,7 @@ export default (props) => {
                         <Button
                             variant="contained"
                             size="small">
-                            Random
+                            학습 결과
                             </Button>
 
                             <Box sx={{display:'inline-block',float:'right'}}>

@@ -125,6 +125,47 @@ export default (props) => {
         setValue(newValue);
       };
 
+    const clickLogin=async()=>{
+        try{
+            var _id = document.getElementById('Login-Id').value;
+            var _password = document.getElementById('Login-Password').value
+
+            await api.signin({
+                    id: _id,
+                    password: _password
+                })
+
+                props.propsSetStep(1)
+            
+        }catch(error){
+            alert(error)
+            props.propsSetStep(1)
+        }
+    }
+
+    const clickJoin = async()=>{
+        try{
+        var _id = document.getElementById('SignUp-ID').value
+        var _password = document.getElementById('SignUp-Password').value
+        var _nickname = document.getElementById('SignUp-Nickname').value
+        var _name = document.getElementById('SignUp-Name').value
+        var _email = document.getElementById('SignUp-Email').value
+
+
+        await api.signup({
+            id: _id,
+            password: _password,
+            nickname: _nickname,
+            name: _name,
+            email: _email
+        })
+        setValue(0)
+
+        }catch(error){
+            alert(error)
+        }
+    }
+
     return (
         <>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider',marginTop:'1rem'}}>
@@ -152,7 +193,7 @@ export default (props) => {
                         fullWidth
                     />
                     <br/><br/>
-                    <Button variant="contained" size="large" style={{ margin: 8, width:'20rem' }} onClick={()=>props.propsSetStep(1)}>
+                    <Button variant="contained" size="large" style={{ margin: 8, width:'20rem' }} onClick={clickLogin}>
                         로그인
                     </Button>
                 </TabPanel>
@@ -199,7 +240,7 @@ export default (props) => {
                         style={{ margin: 8, width:'20rem' }}
                         fullWidth />
                     <br/>
-                    <Button variant="contained" size="large" style={{ margin: 8, width:'20rem' }}>
+                    <Button variant="contained" size="large" style={{ margin: 8, width:'20rem' }} onClick={clickJoin}>
                         Join
                     </Button>
                 </TabPanel>
