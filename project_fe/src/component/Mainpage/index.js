@@ -318,20 +318,20 @@ export default (props) => {
     }
 
     const npcHandleChange = (event) => {
-        var _npc=event.target.value
+        var _npc = event.target.value
         setNpc(_npc);
 
-        var _search=document.getElementById('searchImg').value
+        var _search = document.getElementById('searchImg').value
         var _errorList = []
         var _normalList = []
         originNormalList.forEach(function (step) {
             if (_npc === 'All') {
-                if (step.original_image.search(_search)!==-1) {
+                if (step.original_image.search(_search) !== -1) {
                     _normalList.push(step)
                     console.log(step)
                 }
             } else {
-                if ((step.original_image.search(_search)!==-1) &&( step.source_pc.search(_npc)!==-1)) {
+                if ((step.original_image.search(_search) !== -1) && (step.source_pc.search(_npc) !== -1)) {
                     _normalList.push(step)
                 }
             }
@@ -339,11 +339,11 @@ export default (props) => {
 
         originErrorList.forEach(function (step) {
             if (_npc === 'All') {
-                if (step.original_image.search(_search)!==-1) {
+                if (step.original_image.search(_search) !== -1) {
                     _errorList.push(step)
                 }
             } else {
-                if ((step.original_image.search(_search)!==-1) && (step.source_pc.search(_npc)!==-1)) {
+                if ((step.original_image.search(_search) !== -1) && (step.source_pc.search(_npc) !== -1)) {
                     _errorList.push(step)
                 }
             }
@@ -431,7 +431,7 @@ export default (props) => {
     };
 
     const handleClick = (target, value) => {
-        
+
         switch (target) {
             case "fromRatio":
                 if (value >= 0 && value < toRatio) {
@@ -472,17 +472,17 @@ export default (props) => {
     };
 
     const reorganizedList = () => {
-        var _search=document.getElementById('searchImg').value
+        var _search = document.getElementById('searchImg').value
         var _errorList = []
         var _normalList = []
         originNormalList.forEach(function (step) {
             if (npc === 'All') {
-                if (step.original_image.search(_search)!==-1) {
+                if (step.original_image.search(_search) !== -1) {
                     _normalList.push(step)
                     console.log(step)
                 }
             } else {
-                if ((step.original_image.search(_search)!==-1) &&( step.source_pc.search(npc)!==-1)) {
+                if ((step.original_image.search(_search) !== -1) && (step.source_pc.search(npc) !== -1)) {
                     _normalList.push(step)
                 }
             }
@@ -490,11 +490,11 @@ export default (props) => {
 
         originErrorList.forEach(function (step) {
             if (npc === 'All') {
-                if (step.original_image.search(_search)!==-1) {
+                if (step.original_image.search(_search) !== -1) {
                     _errorList.push(step)
                 }
             } else {
-                if ((step.original_image.search(_search)!==-1) && (step.source_pc.search(npc)!==-1)) {
+                if ((step.original_image.search(_search) !== -1) && (step.source_pc.search(npc) !== -1)) {
                     _errorList.push(step)
                 }
             }
@@ -653,23 +653,23 @@ export default (props) => {
                             <h2>Warning ratio</h2>
 
                             <form>
-                                <div className="value-button" id="decrease" onClick={()=>handleClick("fromRatio",fromRatio-1)}>-</div>
-                                <input type="number" id="number"name="fromRatio" value={fromRatio} onChange={handleChange}/>
+                                <div className="value-button" id="decrease" onClick={() => handleClick("fromRatio", fromRatio - 1)}>-</div>
+                                <input type="number" id="number" name="fromRatio" value={fromRatio} onChange={handleChange} />
                                 <span className="percent-tag">%</span>
-                                <div className="value-button" id="increase" onClick={()=>handleClick("fromRatio",fromRatio+1)}>+</div>
+                                <div className="value-button" id="increase" onClick={() => handleClick("fromRatio", fromRatio + 1)}>+</div>
                                 <span>&nbsp;&nbsp;&nbsp;~&nbsp;&nbsp;&nbsp;</span>
-                                <div className="value-button" id="decrease" onClick={()=>handleClick("toRatio",toRatio-1)}>-</div>
+                                <div className="value-button" id="decrease" onClick={() => handleClick("toRatio", toRatio - 1)}>-</div>
                                 <input type="number" id="number" name="toRatio" value={toRatio} onChange={handleChange} />
                                 <span className="percent-tag">%</span>
-                                <div className="value-button" id="increase" onClick={()=>handleClick("toRatio",toRatio+1)}>+</div>
+                                <div className="value-button" id="increase" onClick={() => handleClick("toRatio", toRatio + 1)}>+</div>
                             </form>
                             <br />
                             <h2>Margin threshold</h2>
                             <form>
-                                <div className="value-button" id="decrease" onClick={()=>handleClick("threshold",threshold-1)}>-</div>
+                                <div className="value-button" id="decrease" onClick={() => handleClick("threshold", threshold - 1)}>-</div>
                                 <input type="number" id="number" name="threshold" value={threshold} onChange={handleChange} />
                                 <span className="percent-tag">%</span>
-                                <div className="value-button" id="increase" onClick={()=>handleClick("threshold",threshold+1)}>+</div>
+                                <div className="value-button" id="increase" onClick={() => handleClick("threshold", threshold + 1)}>+</div>
                             </form>
 
                         </Grid>
